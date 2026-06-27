@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Dragon Fruit AI — Register</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:       #0c0f0e;
+            --surface:  #141918;
+            --border:   rgba(255,255,255,0.07);
+            --pink:     #f0437a;
+            --green:    #2ddf8a;
+            --green-dim:#1a8a55;
+            --text:     #e8ede9;
+            --muted:    #6b7a6e;
+            --error:    #ff6b6b;
+            --success:  #2ddf8a;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow: hidden;
+        }
+
+        /* ── BACKGROUND ── */
+        .bg-layer {
+            position: fixed; inset: 0; z-index: 0;
+            background:
+                radial-gradient(ellipse 55% 65% at 80% 40%, rgba(45,223,138,0.1) 0%, transparent 55%),
+                radial-gradient(ellipse 45% 55% at 15% 60%, rgba(240,67,122,0.09) 0%, transparent 55%);
+        }
+
+        .bg-layer::after {
+            content: '';
+            position: absolute; inset: 0;
+            background-image: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+
+        .blob {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(70px);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .blob-1 {
+            width: 280px; height: 280px;
+            background: radial-gradient(circle, rgba(45,223,138,0.15), transparent 70%);
+            top: -60px; right: 10%;
+            animation: drift 9s ease-in-out infinite alternate;
+        }
+        .blob-2 {
+            width: 220px; height: 220px;
+            background: radial-gradient(circle, rgba(240,67,122,0.12), transparent 70%);
+            bottom: -40px; left: 20%;
+            animation: drift 11s ease-in-out 1.5s infinite alternate-reverse;
+        }
+
+        @keyframes drift {
+            from { transform: translate(0,0) scale(1); }
+            to   { transform: translate(18px,12px) scale(1.06); }
+        }
+
+        /* ── LAYOUT ── */
+        .page {
+            position: relative; z-index: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            height: 100vh;
+        }
+
+        /* ── LEFT ── */
+        .left {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 56px;
+            border-right: 1px solid var(--border);
+            animation: fadeUp 0.8s ease both;
+        }
+
+        /* Step indicator */
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            width: 100%;
+            max-width: 320px;
+            margin-bottom: 48px;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 18px;
+        }
+
+        .step-left {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .step-dot {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 500;
+            flex-shrink: 0;
+            transition: all 0.3s;
+        }
+
+        .step-dot.active {
+            background: linear-gradient(135deg, var(--green), #1ac96e);
+            color: #0c0f0e;
+            box-shadow: 0 0 16px rgba(45,223,138,0.4);
+        }
+
+        .step-dot.done {
+            background: rgba(45,223,138,0.15);
+            border: 1px solid var(--green);
+            color: var(--green);
+        }
+
+        .step-dot.pending {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            color: var(--muted);
+        }
+
+        .step-line {
+            width: 1px;
+            flex: 1;
+            min-height: 28px;
+            background: linear-gradient(to bottom, var(--border), transparent);
+            margin: 4px 0;
+        }
+
+        .step-content {
+            padding-bottom: 28px;
+        }
+
+        .step-title {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 2px;
+        }
+
+        .step-desc {
+            font-size: 0.75rem;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        /* Brand block */
+        .brand-block {
+            text-align: center;
+            padding: 28px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .brand-icon {
+            width: 52px; height: 52px;
+            margin: 0 auto 12px;
+        }
+
+        .brand-block h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            margin-bottom: 6px;
+        }
+
+        .brand-block p {
+            font-size: 0.78rem;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        /* ── RIGHT ── */
+        .right {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 48px;
+            animation: fadeUp 0.8s ease 0.15s both;
+        }
+
+        .register-card {
+            width: 100%;
+            max-width: 400px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 44px 40px;
+            box-shadow: 0 0 0 1px var(--border), 0 40px 80px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .register-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 15%; right: 15%;
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(45,223,138,0.5), transparent);
+        }
+
+        .card-header {
+            margin-bottom: 32px;
+        }
+
+        .card-header h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.7rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .card-header p {
+            font-size: 0.875rem;
+            color: var(--muted);
+        }
+
+        /* Error / success */
+        .msg-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 0.82rem;
+            margin-bottom: 20px;
+        }
+
+        .msg-box.error {
+            background: rgba(255,107,107,0.1);
+            border: 1px solid rgba(255,107,107,0.25);
+            color: var(--error);
+        }
+
+        /* Fields */
+        .field {
+            margin-bottom: 16px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 0.75rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+
+        .field input {
+            width: 100%;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 13px 16px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            color: var(--text);
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+
+        .field input::placeholder { color: #3a4a3e; }
+
+        .field input:focus {
+            border-color: rgba(45,223,138,0.45);
+            box-shadow: 0 0 0 3px rgba(45,223,138,0.08);
+        }
+
+        /* Password strength */
+        .strength-bar {
+            margin-top: 8px;
+            display: flex;
+            gap: 4px;
+        }
+
+        .strength-seg {
+            flex: 1; height: 3px;
+            border-radius: 2px;
+            background: rgba(255,255,255,0.07);
+            transition: background 0.3s;
+        }
+
+        .strength-label {
+            font-size: 0.7rem;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        /* Register button */
+        .btn-register {
+            width: 100%;
+            margin-top: 8px;
+            padding: 14px;
+            background: linear-gradient(135deg, #2ddf8a, #1ab568);
+            color: #0c0f0e;
+            border: none;
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.15s, box-shadow 0.2s;
+            box-shadow: 0 4px 20px rgba(45,223,138,0.3);
+        }
+
+        .btn-register::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.18), transparent);
+        }
+
+        .btn-register:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 28px rgba(45,223,138,0.4);
+        }
+
+        .btn-register:active { transform: translateY(0); }
+
+        /* Terms */
+        .terms {
+            margin-top: 14px;
+            text-align: center;
+            font-size: 0.73rem;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        /* Login link */
+        .login-link {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.82rem;
+            color: var(--muted);
+        }
+
+        .login-link a {
+            color: var(--pink);
+            text-decoration: none;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+
+        .login-link a:hover { opacity: 0.75; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .page { grid-template-columns: 1fr; overflow-y: auto; }
+            .left { display: none; }
+            .right { padding: 32px 20px; height: 100vh; }
+            html, body { overflow: auto; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="bg-layer"></div>
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+
+<div class="page">
+
+    <!-- LEFT -->
+    <div class="left">
+
+        <div class="steps">
+            <div class="step-item">
+                <div class="step-left">
+                    <div class="step-dot active">1</div>
+                    <div class="step-line"></div>
+                </div>
+                <div class="step-content">
+                    <div class="step-title">Create your account</div>
+                    <div class="step-desc">Set up your credentials to get started</div>
+                </div>
+            </div>
+            <div class="step-item">
+                <div class="step-left">
+                    <div class="step-dot pending">2</div>
+                    <div class="step-line"></div>
+                </div>
+                <div class="step-content">
+                    <div class="step-title">Upload your first image</div>
+                    <div class="step-desc">Capture or upload a dragon fruit photo</div>
+                </div>
+            </div>
+            <div class="step-item">
+                <div class="step-left">
+                    <div class="step-dot pending">3</div>
+                </div>
+                <div class="step-content">
+                    <div class="step-title">Get instant results</div>
+                    <div class="step-desc">AI detects disease within seconds</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="brand-block">
+            <svg class="brand-icon" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="26" cy="30" rx="14" ry="17" fill="#f0437a" opacity="0.85"/>
+                <ellipse cx="26" cy="30" rx="9" ry="10" fill="#ffd6e5" opacity="0.55"/>
+                <path d="M26 13 C26 13 21 6 26 3 C31 6 26 13 26 13Z" fill="#2ddf8a"/>
+                <path d="M19 16 C19 16 11 12 14 7 C19 9 19 16 19 16Z" fill="#2ddf8a" opacity="0.75"/>
+                <path d="M33 16 C33 16 41 12 38 7 C33 9 33 16 33 16Z" fill="#2ddf8a" opacity="0.75"/>
+            </svg>
+            <h3>Dragon Fruit AI</h3>
+            <p><p>Built with innovation and care, we use AI technology to empower farmers with fast and accurate crop disease detection.</p></p>
+        </div>
+
+    </div>
+
+    <!-- RIGHT -->
+    <div class="right">
+        <div class="register-card">
+
+            <div class="card-header">
+                <h2>Create account</h2>
+                <p>Join Dragon Fruit AI — it's free to start</p>
+            </div>
+
+            {% if message %}
+            <div class="msg-box error">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6.5" stroke="#ff6b6b"/><path d="M7 4v4M7 9.5v.5" stroke="#ff6b6b" stroke-linecap="round"/></svg>
+                {{ message }}
+            </div>
+            {% endif %}
+
+            <form method="POST">
+
+                <div class="field">
+                    <label>Full Name</label>
+                    <input type="text" name="name" placeholder="Your full name" required>
+                </div>
+
+                <div class="field">
+                    <label>Email Address</label>
+                    <input type="text" name="username" placeholder="you@example.com" required>
+                </div>
+
+                <div class="field">
+                    <label>Password</label>
+                    <input type="password" name="password" id="pwd" placeholder="Create a strong password" required oninput="checkStrength(this.value)">
+                    <div class="strength-bar">
+                        <div class="strength-seg" id="s1"></div>
+                        <div class="strength-seg" id="s2"></div>
+                        <div class="strength-seg" id="s3"></div>
+                        <div class="strength-seg" id="s4"></div>
+                    </div>
+                    <div class="strength-label" id="slabel"></div>
+                </div>
+
+                <button type="submit" class="btn-register">Create Account</button>
+
+            </form>
+
+            <p class="terms">By registering you agree to our Terms of Service and Privacy Policy</p>
+
+            <p class="login-link">
+                Already have an account? <a href="/login">Sign in →</a>
+            </p>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+function checkStrength(val) {
+    const segs = [s1,s2,s3,s4];
+    const label = document.getElementById('slabel');
+    let score = 0;
+    if (val.length >= 8) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+
+    const colors = ['#ff6b6b','#ffa94d','#f0437a','#2ddf8a'];
+    const labels = ['','Weak','Fair','Good','Strong'];
+    segs.forEach((s,i) => {
+        s.style.background = i < score ? colors[score-1] : 'rgba(255,255,255,0.07)';
+    });
+    label.textContent = val.length ? labels[score] : '';
+    label.style.color = score > 0 ? colors[score-1] : 'var(--muted)';
+}
+</script>
+
+</body>
+</html>

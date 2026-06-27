@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <title>Dragon Fruit Disease AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+    :root {
+        --bg:#0c0f0e;--bg2:#111614;--surface:#141918;--surface2:#1a201e;
+        --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+        --pink:#f0437a;--pink-dim:rgba(240,67,122,0.15);
+        --green:#2ddf8a;--green-dim:rgba(45,223,138,0.12);
+        --gold:#e8c46a;--text:#e8ede9;--text2:#a8b8ac;--muted:#5a6b5e;
+        --card-shadow:0 24px 60px rgba(0,0,0,0.5);
+        --nav-bg:rgba(12,15,14,0.85);--overlay-bg:rgba(0,0,0,0.75);
+    }
+    [data-theme="light"] {
+        --bg:#f4f7f5;--bg2:#edf1ee;--surface:#ffffff;--surface2:#f0f5f1;
+        --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);
+        --pink:#d42f62;--pink-dim:rgba(212,47,98,0.1);
+        --green:#1a9459;--green-dim:rgba(26,148,89,0.1);
+        --gold:#b5882a;--text:#1a231e;--text2:#4a6352;--muted:#8aaa96;
+        --card-shadow:0 8px 32px rgba(0,0,0,0.1);
+        --nav-bg:rgba(244,247,245,0.9);--overlay-bg:rgba(0,0,0,0.55);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .35s,color .35s;overflow-x:hidden}
+
+    .bg-ambient{position:fixed;inset:0;z-index:0;pointer-events:none}
+    .bg-ambient::before{content:'';position:absolute;inset:0;
+      background:radial-gradient(ellipse 55% 45% at 10% 20%,rgba(240,67,122,0.08) 0%,transparent 55%),
+                radial-gradient(ellipse 50% 40% at 90% 80%,rgba(45,223,138,0.07) 0%,transparent 55%);transition:opacity .35s}
+    .bg-ambient::after{content:'';position:absolute;inset:0;
+      background-image:radial-gradient(circle,rgba(255,255,255,0.025) 1px,transparent 1px);background-size:30px 30px}
+    [data-theme="light"] .bg-ambient::before{
+      background:radial-gradient(ellipse 55% 45% at 10% 20%,rgba(212,47,98,0.05) 0%,transparent 55%),
+                radial-gradient(ellipse 50% 40% at 90% 80%,rgba(26,148,89,0.05) 0%,transparent 55%)}
+    [data-theme="light"] .bg-ambient::after{background-image:radial-gradient(circle,rgba(0,0,0,0.04) 1px,transparent 1px)}
+
+    /* NAVBAR */
+    .navbar{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;
+      padding:0 40px;height:64px;background:var(--nav-bg);backdrop-filter:blur(16px);
+      border-bottom:1px solid var(--border);transition:background .35s,border-color .35s}
+    .logo{display:flex;align-items:center;gap:10px;font-family:'Playfair Display',serif;
+      font-size:1.2rem;font-weight:700;color:var(--text);text-decoration:none}
+    .logo-dot{width:8px;height:8px;border-radius:50%;background:var(--green);
+      box-shadow:0 0 8px var(--green);animation:pulse-dot 2.5s ease infinite}
+    @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.6)}}
+    .nav-right{display:flex;align-items:center;gap:12px}
+    .welcome{font-size:.8rem;color:var(--muted);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .theme-toggle{width:42px;height:24px;background:var(--surface2);border:1px solid var(--border2);
+      border-radius:100px;cursor:pointer;position:relative;transition:background .25s;flex-shrink:0}
+    .theme-toggle::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;
+      border-radius:50%;background:var(--green);transition:transform .25s,background .25s;
+      box-shadow:0 0 6px rgba(45,223,138,0.5)}
+    [data-theme="light"] .theme-toggle::after{transform:translateX(18px);background:var(--gold);box-shadow:0 0 6px rgba(232,196,106,0.5)}
+    .theme-label{font-size:.72rem;color:var(--muted);letter-spacing:.06em}
+    .nav-btn{padding:7px 18px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:500;
+      text-decoration:none;border:1px solid transparent;cursor:pointer;transition:all .2s}
+    .nav-btn.blue{background:rgba(45,223,138,0.12);border-color:rgba(45,223,138,0.25);color:var(--green)}
+    .nav-btn.blue:hover{background:rgba(45,223,138,0.2)}
+    .nav-btn.red{background:rgba(240,67,122,0.12);border-color:rgba(240,67,122,0.25);color:var(--pink)}
+    .nav-btn.red:hover{background:rgba(240,67,122,0.2)}
+
+    section,.section-wrap{position:relative;z-index:1}
+
+    /* HERO */
+    .hero{min-height:460px;display:flex;align-items:center;justify-content:center;text-align:center;
+      padding:80px 24px 60px;position:relative;z-index:1;overflow:hidden;animation:fadeUp .8s ease both}
+    .hero::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(240,67,122,0.06),rgba(45,223,138,0.04))}
+    .hero-content{max-width:700px;position:relative}
+    .hero-pill{display:inline-flex;align-items:center;gap:7px;background:var(--green-dim);
+      border:1px solid rgba(45,223,138,0.25);border-radius:100px;padding:5px 16px;
+      font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--green);margin-bottom:28px}
+    .hero-pill-dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse-dot 2s ease infinite}
+    .hero h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,4vw,3.2rem);font-weight:700;line-height:1.15;margin-bottom:16px}
+    .hero h1 span{color:var(--pink);font-style:italic}
+    .hero .tagline{font-size:1rem;color:var(--green);font-weight:500;margin-bottom:12px;letter-spacing:.04em}
+    .hero .sub{font-size:.9rem;color:var(--text2);line-height:1.75;max-width:500px;margin:0 auto}
+
+    /* FEATURES */
+    .features{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);
+      border-top:1px solid var(--border);border-bottom:1px solid var(--border);animation:fadeUp .8s ease .1s both}
+    .feature{background:var(--bg);padding:40px 32px;text-align:center;transition:background .2s}
+    .feature:hover{background:var(--surface)}
+    .feature-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+      font-size:1.3rem;margin:0 auto 16px;border:1px solid var(--border2)}
+    .feature:nth-child(1) .feature-icon{background:var(--pink-dim);border-color:rgba(240,67,122,0.2)}
+    .feature:nth-child(2) .feature-icon{background:rgba(232,196,106,0.1);border-color:rgba(232,196,106,0.2)}
+    .feature:nth-child(3) .feature-icon{background:var(--green-dim);border-color:rgba(45,223,138,0.2)}
+    .feature h3{font-size:.95rem;font-weight:600;margin-bottom:8px;color:var(--text)}
+    .feature p{font-size:.82rem;color:var(--text2);line-height:1.6}
+
+    /* GUIDE */
+    .guide-section{padding:60px 40px;max-width:1000px;margin:0 auto;animation:fadeUp .8s ease .2s both}
+    .section-label{display:flex;align-items:center;gap:10px;font-size:.72rem;letter-spacing:.12em;
+      text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+    .section-label::before,.section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+    .section-label::before{flex:0;width:24px}
+    .guide-heading{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;margin-bottom:16px;text-align:center}
+    .guide-intro{text-align:center;font-size:.88rem;color:var(--text2);line-height:1.7;max-width:600px;margin:0 auto 32px}
+    .guide-intro strong{color:var(--text)}
+    .guide-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+    .guide-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:28px;transition:border-color .2s,transform .2s}
+    .guide-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+    .guide-card-header{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+    .guide-card-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+    .stem-icon{background:var(--green-dim);border:1px solid rgba(45,223,138,0.2)}
+    .spot-icon{background:var(--pink-dim);border:1px solid rgba(240,67,122,0.2)}
+    .guide-card-title{font-size:1.05rem;font-weight:700}
+    .guide-stem .guide-card-title{color:var(--green)}
+    .guide-spot .guide-card-title{color:var(--pink)}
+
+    /* DISEASE IMAGE ROW — updated for real images */
+    .disease-images{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px}
+    .disease-img-wrap{display:flex;flex-direction:column;align-items:center;gap:6px}
+
+    /* The image frame: fixed square using aspect-ratio, clips overflow */
+    .disease-img-frame{
+      width:100%;
+      aspect-ratio:1/1;
+      border-radius:12px;
+      overflow:hidden;
+      position:relative;
+      background:var(--surface2);
+    }
+    .guide-stem .disease-img-frame{border:1px solid rgba(45,223,138,0.3)}
+    .guide-spot .disease-img-frame{border:1px solid rgba(240,67,122,0.3)}
+
+    /* The actual image: covers the frame, no stretch */
+    .disease-img-frame img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      object-position:center;
+      display:block;
+      transition:transform .35s ease, filter .35s ease;
+    }
+
+    /* Hover effect: subtle zoom + slight brightness lift */
+    .disease-img-frame:hover img{
+      transform:scale(1.08);
+      filter:brightness(1.12) saturate(1.1);
+    }
+
+    /* Overlay label that appears on hover */
+    .disease-img-frame::after{
+      content:attr(data-label);
+      position:absolute;
+      bottom:0;left:0;right:0;
+      padding:6px 6px 5px;
+      background:linear-gradient(transparent, rgba(0,0,0,0.72));
+      font-size:.58rem;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      color:rgba(255,255,255,0.85);
+      text-align:center;
+      opacity:0;
+      transition:opacity .25s ease;
+    }
+    .disease-img-frame:hover::after{opacity:1}
+
+    .disease-img-label{font-size:.68rem;color:var(--muted);text-align:center;letter-spacing:.03em;line-height:1.3}
+
+    .guide-when{margin-bottom:8px}
+    .when-label{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+    .guide-checklist{list-style:none;display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+    .guide-checklist li{font-size:.83rem;color:var(--text2);line-height:1.5;padding-left:4px}
+    .guide-checklist li strong{color:var(--text)}
+    .guide-tip{display:flex;gap:10px;align-items:flex-start;border-radius:10px;padding:12px 14px;
+      font-size:.8rem;line-height:1.6;margin-bottom:16px;color:var(--text2)}
+    .guide-tip strong{color:var(--text)}
+    .guide-tip em{font-style:italic}
+    .stem-tip{background:var(--green-dim);border:1px solid rgba(45,223,138,0.15)}
+    .spot-tip{background:var(--pink-dim);border:1px solid rgba(240,67,122,0.15)}
+    .tip-icon{font-size:1rem;flex-shrink:0;margin-top:1px}
+    .guide-detects{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+    .detects-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-right:4px}
+    .dtag{font-size:.7rem;padding:2px 9px;border-radius:100px;border:1px solid var(--border2);color:var(--text2);background:var(--surface2)}
+
+    /* DETECTION */
+    .detect-section{padding:20px 40px 80px;max-width:1000px;margin:0 auto;animation:fadeUp .8s ease .3s both}
+    .detect-header{text-align:center;margin-bottom:36px}
+    .detect-header h2{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:700}
+    .detect-subhead{font-size:.88rem;color:var(--text2);margin-top:6px}
+    .model-cards{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+    .model-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:32px;
+      transition:border-color .25s,box-shadow .25s,transform .2s;position:relative;overflow:hidden;
+      display:flex!important;flex-direction:column!important}
+    .model-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+    .model-card.stem::before{background:linear-gradient(to right,var(--green),transparent)}
+    .model-card.spot::before{background:linear-gradient(to right,var(--pink),transparent)}
+    .model-card:hover{border-color:var(--border2);transform:translateY(-3px);box-shadow:var(--card-shadow)}
+    .model-card h3{font-size:1.1rem;font-weight:600;margin-bottom:10px}
+    .model-card.stem h3{color:var(--green)}
+    .model-card.spot h3{color:var(--pink)}
+    .model-card .desc{font-size:.83rem;color:var(--text2);line-height:1.65;margin-bottom:18px}
+    .model-card .desc strong{color:var(--text)}
+    .model-card-body{flex:1}
+    .model-card-footer{margin-top:auto}
+    .disease-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:24px}
+    .tag{font-size:.72rem;padding:3px 10px;border-radius:100px;border:1px solid var(--border2);color:var(--text2);background:var(--surface2)}
+
+    /* UPLOAD */
+    .upload-area{border:1.5px dashed var(--border2);border-radius:12px;padding:20px;text-align:center;
+      cursor:pointer;transition:border-color .2s,background .2s;margin-bottom:12px;position:relative}
+    .upload-area:hover{border-color:var(--green);background:var(--green-dim)}
+    .model-card.spot .upload-area:hover{border-color:var(--pink);background:var(--pink-dim)}
+    .upload-icon{font-size:1.5rem;margin-bottom:6px}
+    .upload-text{font-size:.78rem;color:var(--muted)}
+    .preview{display:none;width:100%;border-radius:10px;max-height:150px;object-fit:cover;margin-top:10px;border:1px solid var(--border)}
+    .btn-predict{width:100%;padding:13px;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;
+      font-size:.88rem;font-weight:600;cursor:pointer;letter-spacing:.04em;position:relative;overflow:hidden;transition:transform .15s,box-shadow .2s}
+    .btn-predict::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.14),transparent)}
+    .model-card.stem .btn-predict{background:linear-gradient(135deg,#2ddf8a,#1ab568);color:#0c0f0e;box-shadow:0 4px 18px rgba(45,223,138,0.3)}
+    .model-card.spot .btn-predict{background:linear-gradient(135deg,#f0437a,#c0205a);color:#fff;box-shadow:0 4px 18px rgba(240,67,122,0.3)}
+    .btn-predict:hover{transform:translateY(-1px)}
+    .btn-predict:active{transform:translateY(0)}
+    .btn-predict:disabled{opacity:.6;cursor:not-allowed;transform:none}
+
+    /* OVERLAY POPUP */
+    .overlay-backdrop{display:none;position:fixed;inset:0;z-index:200;background:var(--overlay-bg);
+      backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:24px}
+    .overlay-backdrop.active{display:flex}
+    .popup-card{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:36px;
+      width:100%;max-width:480px;box-shadow:0 40px 100px rgba(0,0,0,0.6);position:relative;animation:popIn .25s ease}
+    @keyframes popIn{from{opacity:0;transform:scale(.94) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
+    .popup-close-btn{position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:50%;
+      border:1px solid var(--border2);background:var(--surface2);color:var(--muted);cursor:pointer;
+      font-size:.85rem;display:flex;align-items:center;justify-content:center;transition:background .2s,color .2s}
+    .popup-close-btn:hover{background:var(--pink-dim);color:var(--pink)}
+    .popup-title{font-family:'Playfair Display',serif;font-size:1.4rem;margin-bottom:20px;color:var(--text)}
+    .result-img{width:100%;border-radius:12px;max-height:200px;object-fit:cover;border:1px solid var(--border);margin-bottom:18px}
+    .label{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+    .result-badge{display:inline-block;padding:8px 20px;background:var(--pink-dim);
+      border:1px solid rgba(240,67,122,0.3);border-radius:100px;color:var(--pink);font-size:.95rem;font-weight:600;margin-bottom:16px}
+    .result-badge.healthy{background:var(--green-dim);border-color:rgba(45,223,138,0.3);color:var(--green)}
+    .loading-msg{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.85rem;margin:10px 0}
+    .spinner{width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--green);
+      border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .info-box{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px}
+    .info-box h3{font-size:.8rem;font-weight:600;margin-bottom:8px;color:var(--text2)}
+    .info-box p{font-size:.83rem;color:var(--text2);line-height:1.6}
+    .btn-group{display:flex;flex-direction:column;gap:10px}
+    .btn-full-detail{padding:13px;background:linear-gradient(135deg,var(--green),#1ab568);color:#0c0f0e;
+      border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;
+      cursor:pointer;transition:transform .15s,box-shadow .2s;box-shadow:0 4px 16px rgba(45,223,138,0.3)}
+    .btn-full-detail:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(45,223,138,0.4)}
+    .btn-back-small{padding:11px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;
+      color:var(--text2);font-family:'DM Sans',sans-serif;font-size:.85rem;cursor:pointer;transition:background .2s}
+    .btn-back-small:hover{background:var(--border)}
+
+    /* DETAIL PAGE */
+    .detail-page{width:100%;max-width:720px;margin:0 auto;background:var(--surface);border:1px solid var(--border2);
+      border-radius:24px;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,0.6)}
+    .detail-topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;
+      background:var(--surface2);border-bottom:1px solid var(--border);font-size:.82rem;color:var(--text2)}
+    .detail-back-btn{background:none;border:none;color:var(--green);font-family:'DM Sans',sans-serif;
+      font-size:.85rem;cursor:pointer;font-weight:500;transition:opacity .2s}
+    .detail-back-btn:hover{opacity:.7}
+    .detail-meta-top{background:var(--green-dim);border:1px solid rgba(45,223,138,0.2);border-radius:100px;
+      padding:3px 12px;font-size:.72rem;color:var(--green)}
+    .detail-header{display:flex;align-items:center;gap:20px;padding:24px;border-bottom:1px solid var(--border)}
+    .detail-hero-img{width:160px;height:120px;object-fit:cover;border-radius:12px;border:1px solid var(--border);flex-shrink:0}
+    .detail-sections{padding:0 24px 24px}
+    .detail-section{display:flex;gap:18px;padding:24px 0;border-bottom:1px solid var(--border)}
+    .detail-section:last-child{border-bottom:none}
+    .ds-icon{font-size:1.5rem;width:40px;flex-shrink:0;margin-top:2px}
+    .ds-body{flex:1}
+    .ds-body h2{font-family:'Playfair Display',serif;font-size:1.05rem;margin-bottom:12px;color:var(--text)}
+    .ds-content{display:flex;flex-direction:column;gap:8px}
+    .step-row{display:flex;gap:12px;align-items:flex-start;font-size:.83rem;color:var(--text2);line-height:1.6}
+    .step-num{width:22px;height:22px;border-radius:50%;background:var(--green-dim);border:1px solid rgba(45,223,138,0.2);
+      color:var(--green);font-size:.72rem;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+    .specialist-msg{font-size:.83rem;color:var(--text2);line-height:1.7;margin-bottom:14px}
+    .consult-call-btn{display:flex;align-items:center;gap:14px;background:var(--green-dim);
+      border:1px solid rgba(45,223,138,0.2);border-radius:12px;padding:14px 18px;text-decoration:none;
+      color:var(--text);transition:border-color .2s,background .2s}
+    .consult-call-btn:hover{border-color:rgba(45,223,138,0.4);background:rgba(45,223,138,0.18)}
+    .call-icon{font-size:1.4rem}
+    .consult-call-btn strong{font-size:.88rem;display:block;margin-bottom:2px}
+    .consult-call-btn small{font-size:.75rem;color:var(--text2)}
+
+    /* FOOTER */
+    .footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:28px 40px;
+      display:flex;align-items:center;justify-content:space-between;font-size:.75rem;color:var(--muted)}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+    @media(max-width:768px){
+        .navbar{padding:0 20px}
+        .welcome{display:none}
+        .features{grid-template-columns:1fr}
+        .guide-grid{grid-template-columns:1fr}
+        .model-cards{grid-template-columns:1fr}
+        .guide-section,.detect-section{padding-left:20px;padding-right:20px}
+        .detail-header{flex-direction:column}
+        .detail-hero-img{width:100%;height:180px}
+        .footer{flex-direction:column;gap:8px;text-align:center}
+    }
+    </style>
+</head>
+<body>
+<div class="bg-ambient"></div>
+
+<nav class="navbar">
+    <div class="logo">
+        <div class="logo-dot"></div>
+        DragonAI
+    </div>
+    <div class="nav-right">
+        <span class="welcome">Welcome, {{ current_user.username }}</span>
+        <span class="theme-label" id="themeLabel">Dark</span>
+        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Toggle theme"></button>
+        <a href="/history" class="nav-btn blue">History</a>
+        <a href="/logout" class="nav-btn red">Logout</a>
+    </div>
+</nav>
+
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-pill">
+            <span class="hero-pill-dot"></span>
+            AI-Powered Detection
+        </div>
+        <h1>Dragon Fruit <span>Disease</span><br>Detection</h1>
+        <p class="tagline">AI-powered diagnosis for plant health</p>
+        <p class="sub">Upload a clear image of the affected area and get instant disease detection with organic &amp; chemical treatment suggestions.</p>
+    </div>
+</section>
+
+<section class="features">
+    <div class="feature">
+        <div class="feature-icon">📷</div>
+        <h3>Upload Image</h3>
+        <p>Capture a clear photo of the affected plant area</p>
+    </div>
+    <div class="feature">
+        <div class="feature-icon">🧠</div>
+        <h3>AI Detection</h3>
+        <p>Our model analyzes and identifies plant disease instantly</p>
+    </div>
+    <div class="feature">
+        <div class="feature-icon">🌿</div>
+        <h3>Get Treatment</h3>
+        <p>Receive organic and chemical cure suggestions</p>
+    </div>
+</section>
+
+<!-- ── GUIDE SECTION ── -->
+<div class="guide-section section-wrap">
+    <div class="section-label">Model Guide</div>
+    <h2 class="guide-heading">How to Choose the Right Model?</h2>
+    <p class="guide-intro">Dragon fruit diseases can affect different parts of the plant. Look at your plant carefully and pick the model based on <strong>where and how</strong> the problem appears.</p>
+    <div class="guide-grid">
+
+        <!-- STEM CARD -->
+        <div class="guide-card guide-stem">
+            <div class="guide-card-header">
+                <div class="guide-card-icon stem-icon">🌿</div>
+                <div class="guide-card-title">Stem Model</div>
+            </div>
+
+            <div class="disease-images">
+                <div class="disease-img-wrap">
+                    <div class="disease-img-frame" data-label="Stem Canker">
+                        <img
+                            src="/static/stemcranker.png"
+                            alt="Stem Canker — dark sunken lesions on dragon fruit stem"
+                            loading="lazy"
+                        >
+                    </div>
+                    <span class="disease-img-label">Stem Canker</span>
+                </div>
+                <div class="disease-img-wrap">
+                    <div class="disease-img-frame" data-label="Anthracnose">
+                        <img
+                            src="/static/anthranose.png"
+                            alt="Anthracnose — orange-brown sunken spots on stem"
+                            loading="lazy"
+                        >
+                    </div>
+                    <span class="disease-img-label">Anthracnose</span>
+                </div>
+                <div class="disease-img-wrap">
+                    <div class="disease-img-frame" data-label="Cactus Virus X">
+                        <img
+                            src="/static/cactusvirusX.png"
+                            alt="Cactus Virus X — viral discolouration on dragon fruit"
+                            loading="lazy"
+                        >
+                    </div>
+                    <span class="disease-img-label">Cactus Virus X</span>
+                </div>
+            </div>
+
+            <p class="guide-when"><span class="when-label">Use when you see:</span></p>
+            <ul class="guide-checklist">
+                <li>✓ Cracks or splits on the <strong>main thick stem</strong></li>
+                <li>✓ Dark brown or black <strong>rotting patches</strong> on the stem</li>
+                <li>✓ White or grey <strong>fungal growth</strong> on stem surface</li>
+            </ul>
+            <div class="guide-tip stem-tip">
+                <span class="tip-icon">💡</span>
+                <span><strong>Farmer tip:</strong> If the problem is on the <em>thick green body</em> of the plant — not the thin branches — use the Stem Model.</span>
+            </div>
+            <div class="guide-detects">
+                <span class="detects-label">Detects:</span>
+                <span class="dtag">Stem Canker</span>
+                <span class="dtag">Anthracnose</span>
+                <span class="dtag">Cactus Virus X</span>
+            </div>
+        </div>
+
+        <!-- SPOT CARD -->
+        <div class="guide-card guide-spot">
+            <div class="guide-card-header">
+                <div class="guide-card-icon spot-icon">🍂</div>
+                <div class="guide-card-title">Spot Model</div>
+            </div>
+
+            <div class="disease-images">
+                <div class="disease-img-wrap">
+                    <div class="disease-img-frame" data-label="Brown Spot">
+                        <img
+                            src="/static/brownspot.png"
+                            alt="Brown Spot — round brown lesions with yellow halo"
+                            loading="lazy"
+                        >
+                    </div>
+                    <span class="disease-img-label">Brown Spot</span>
+                </div>
+                <div class="disease-img-wrap">
+                    <div class="disease-img-frame" data-label="Soft Rot">
+                        <img
+                            src="/static/softspot.png"
+                            alt="Soft Rot — water-soaked mushy tissue on stem"
+                            loading="lazy"
+                        >
+                    </div>
+                    <span class="disease-img-label">Soft Rot</span>
+                </div>
+                <div class="disease-img-wrap">
+                    <div class="disease-img-frame" data-label="Black Spot">
+                        <img
+                            src="/static/blackspot.png"
+                            alt="Black Spot — dark circular spots spreading on surface"
+                            loading="lazy"
+                        >
+                    </div>
+                    <span class="disease-img-label">Black Spot</span>
+                </div>
+            </div>
+
+            <p class="guide-when"><span class="when-label">Use when you see:</span></p>
+            <ul class="guide-checklist">
+                <li>✓ Small round <strong>black, brown, or grey spots</strong> on the surface</li>
+                <li>✓ Wet or dry <strong>lesions and patches</strong> spreading outward</li>
+                <li>✓ Yellow halo rings <strong>around dark spots</strong></li>
+            </ul>
+            <div class="guide-tip spot-tip">
+                <span class="tip-icon">💡</span>
+                <span><strong>Farmer tip:</strong> If you see <em>spots, dots, or patches</em> anywhere on the plant — even if the stem looks fine — use the Spot Model.</span>
+            </div>
+            <div class="guide-detects">
+                <span class="detects-label">Detects:</span>
+                <span class="dtag">Brown Spot</span>
+                <span class="dtag">Soft Rot</span>
+                <span class="dtag">Black Spot</span>
+                <span class="dtag">Gray Blight</span>
+                <span class="dtag">Healthy Stem</span>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="detect-section section-wrap">
+    <div class="detect-header">
+        <h2>Choose Detection Model</h2>
+        <p class="detect-subhead">Select the model that matches what you see on your plant</p>
+    </div>
+    <div class="model-cards">
+        <div class="model-card stem">
+            <div class="model-card-body">
+                <h3>🌿 Stem Model</h3>
+                <p class="desc">Use when disease is visible on the <strong>main stem</strong> — cracks, rot, or fungal growth</p>
+                <div class="disease-tags">
+                    <span class="tag">Stem Canker</span>
+                    <span class="tag">Anthracnose</span>
+                    <span class="tag">Cactus Virus X</span>
+                </div>
+            </div>
+            <div class="model-card-footer">
+                <div class="upload-area" id="stemDropZone" onclick="triggerFileInput('stemFile')">
+                    <input type="file" name="image" id="stemFile" accept="image/*" style="display:none">
+                    <div class="upload-icon" id="stemUploadIcon">📂</div>
+                    <div class="upload-text" id="stemUploadText">Click to upload or drag &amp; drop</div>
+                    <img class="preview" id="stemPreview" alt="Preview">
+                </div>
+                <button type="button" class="btn-predict" id="stemBtn" onclick="submitForm('stem')">Predict Disease</button>
+            </div>
+        </div>
+        <div class="model-card spot">
+            <div class="model-card-body">
+                <h3>🍂 Spot Model</h3>
+                <p class="desc">Use when disease appears as <strong>spots or patches</strong> on the plant surface</p>
+                <div class="disease-tags">
+                    <span class="tag">Healthy Stem</span>
+                    <span class="tag">Brown Spot</span>
+                    <span class="tag">Soft Rot</span>
+                    <span class="tag">Black Spot</span>
+                    <span class="tag">Gray Blight</span>
+                </div>
+            </div>
+            <div class="model-card-footer">
+                <div class="upload-area" id="spotDropZone" onclick="triggerFileInput('spotFile')">
+                    <input type="file" name="image" id="spotFile" accept="image/*" style="display:none">
+                    <div class="upload-icon" id="spotUploadIcon">📂</div>
+                    <div class="upload-text" id="spotUploadText">Click to upload or drag &amp; drop</div>
+                    <img class="preview" id="spotPreview" alt="Preview">
+                </div>
+                <button type="button" class="btn-predict" id="spotBtn" onclick="submitForm('spot')">Predict Disease</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="footer">
+    <span>🌿 DragonAI — Smart Disease Detection</span>
+    <span>Powered by Deep Learning · For agricultural use</span>
+</footer>
+
+<!-- POPUP 1 — QUICK RESULT -->
+<div id="resultOverlay" class="overlay-backdrop">
+    <div class="popup-card">
+        <button onclick="closeOverlay()" class="popup-close-btn">✕</button>
+        <h2 class="popup-title">🔍 Prediction Result</h2>
+        <img id="overlayImg" src="" class="result-img" alt="Plant image">
+        <p class="label">Detected Disease</p>
+        <div id="overlayBadge" class="result-badge">—</div>
+        <div id="overlayLoading" class="loading-msg">
+            <span class="spinner"></span> Analyzing image, please wait...
+        </div>
+        <div id="overlaySummary" style="display:none;margin:14px 0 0">
+            <div class="info-box">
+                <h3>🦠 Cause (Summary)</h3>
+                <p id="summaryText">—</p>
+            </div>
+        </div>
+        <div id="overlayActions" style="display:none;margin-top:16px">
+            <div class="btn-group">
+                <button onclick="openDetailPage()" class="btn-full-detail">📋 View Full Details &amp; Treatment</button>
+                <button onclick="closeOverlay()" class="btn-back-small">← Back</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- POPUP 2 — FULL DETAIL REPORT -->
+<div id="detailOverlay" class="overlay-backdrop" style="overflow-y:auto;align-items:flex-start;padding:30px 16px 60px">
+    <div class="detail-page">
+        <div class="detail-topbar">
+            <button onclick="closeDetail()" class="detail-back-btn">← Back</button>
+            <span>Full Disease Report</span>
+            <span id="detailModelUsed" class="detail-meta-top">—</span>
+        </div>
+        <div class="detail-header">
+            <img id="detailImg" src="" class="detail-hero-img" alt="Plant">
+            <div>
+                <p class="label" style="margin:0 0 6px">Detected Disease</p>
+                <div id="detailBadge" class="result-badge">—</div>
+            </div>
+        </div>
+        <div class="detail-sections">
+            <div class="detail-section">
+                <div class="ds-icon">🦠</div>
+                <div class="ds-body">
+                    <h2>Cause</h2>
+                    <div id="detailCause" class="ds-content">—</div>
+                </div>
+            </div>
+            <div class="detail-section">
+                <div class="ds-icon">🌿</div>
+                <div class="ds-body">
+                    <h2>Organic Cure</h2>
+                    <div id="detailOrganic" class="ds-content">—</div>
+                </div>
+            </div>
+            <div class="detail-section">
+                <div class="ds-icon">🧪</div>
+                <div class="ds-body">
+                    <h2>Chemical Cure</h2>
+                    <div id="detailChemical" class="ds-content">—</div>
+                </div>
+            </div>
+            <div class="detail-section">
+                <div class="ds-icon">📞</div>
+                <div class="ds-body">
+                    <h2>Consult a Specialist</h2>
+                    <p class="specialist-msg">If symptoms persist, spread rapidly, or you're unsure of the diagnosis, we strongly recommend consulting a certified agricultural expert or plant pathologist.</p>
+                    <a href="tel:18001801551" class="consult-call-btn">
+                        <span class="call-icon">📱</span>
+                        <span>
+                            <strong>Call Agricultural Helpline</strong>
+                            <small>1800-180-1551 (Kisan Call Centre — Toll Free)</small>
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div style="text-align:center;padding:0 24px 28px">
+            <button onclick="closeDetail()" class="btn-back-small" style="width:auto;padding:13px 40px">← Back to Detection</button>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ── THEME ── */
+function toggleTheme(){
+    const html=document.documentElement;
+    const next=html.getAttribute('data-theme')==='dark'?'light':'dark';
+    html.setAttribute('data-theme',next);
+    document.getElementById('themeLabel').textContent=next==='dark'?'Dark':'Light';
+    localStorage.setItem('df-theme',next);
+}
+(function initTheme(){
+    const s=localStorage.getItem('df-theme')||'dark';
+    document.documentElement.setAttribute('data-theme',s);
+    const l=document.getElementById('themeLabel');
+    if(l) l.textContent=s==='dark'?'Dark':'Light';
+})();
+
+/* ── FILE INPUT ── */
+function triggerFileInput(id){ document.getElementById(id).click(); }
+
+['stemFile','spotFile'].forEach(id=>{
+    document.getElementById(id).addEventListener('change',function(){
+        if(!this.files[0]) return;
+        const type=id==='stemFile'?'stem':'spot';
+        const preview=document.getElementById(type+'Preview');
+        preview.src=URL.createObjectURL(this.files[0]);
+        preview.style.display='block';
+        document.getElementById(type+'UploadIcon').style.display='none';
+        document.getElementById(type+'UploadText').style.display='none';
+    });
+});
+
+/* ── DRAG & DROP ── */
+['stem','spot'].forEach(type=>{
+    const zone=document.getElementById(type+'DropZone');
+    zone.addEventListener('dragover',e=>{e.preventDefault();zone.style.borderColor='var(--green)'});
+    zone.addEventListener('dragleave',()=>{zone.style.borderColor=''});
+    zone.addEventListener('drop',e=>{
+        e.preventDefault();
+        zone.style.borderColor='';
+        const file=e.dataTransfer.files[0];
+        if(!file||!file.type.startsWith('image/')) return;
+        const input=document.getElementById(type+'File');
+        const dt=new DataTransfer();
+        dt.items.add(file);
+        input.files=dt.files;
+        input.dispatchEvent(new Event('change'));
+    });
+});
+
+/* ── DISEASE DB ── */
+const DB={};
+function reg(variants,data){ variants.forEach(v=>DB[v.toLowerCase().replace(/[\s_-]+/g,'')]=data); }
+
+reg(['Stem Canker','StemCanker','stemcanker','stem_canker'],{
+    display:'Stem Canker',
+    cause:'Caused by the fungus Neoscytalidium dimidiatum, which thrives in warm, humid conditions. The pathogen enters through wounds or natural openings in the stem, producing dark, sunken, spreading lesions that can girdle and kill the entire stem section if left untreated.',
+    organic:'1. Remove and destroy all infected stem sections immediately using sterilised tools.\n2. Apply diluted neem oil (5 ml per litre of water) on affected areas every 7 days.\n3. Dust cut surfaces with wood ash or turmeric powder to seal and dry the wound.\n4. Improve air circulation by pruning overcrowded stems and avoid all overhead irrigation.',
+    chemical:'1. Apply copper oxychloride (0.3%) or Mancozeb (0.2%) fungicide every 10–14 days.\n2. In severe infections, drench the base with Carbendazim (0.1%) solution.\n3. Alternate between fungicides each spray cycle to prevent resistance.\n4. Ensure full coverage of all stem surfaces, especially around wound sites.'
+});
+reg(['Anthracnose','anthracnose'],{
+    display:'Anthracnose',
+    cause:'Caused by the fungus Colletotrichum gloeosporioides. Spreads rapidly in wet, humid weather through rain splashes and infected tools. Produces orange-brown sunken spots on stems and fruit that enlarge and merge during prolonged wet periods.',
+    organic:'1. Spray baking soda (1 tsp) mixed with neem oil (5 ml) per litre of water every 7 days.\n2. Remove and bag all infected plant material — do not compost it.\n3. Apply Trichoderma harzianum bio-fungicide to soil as a preventive treatment.\n4. Sterilise all pruning and harvesting tools with 70% alcohol between uses.',
+    chemical:'1. Spray Azoxystrobin (0.1%) or Mancozeb (0.25%) every 7–10 days during wet seasons.\n2. Alternate with Carbendazim (0.1%) to prevent fungal resistance.\n3. Apply during dry periods — avoid spraying just before or after rainfall.\n4. Ensure thorough coverage including all stem surface areas.'
+});
+reg(['Cactus Virus X','CactusVirusX','cactusvirusx','cactus_virus_x','cactusvirus'],{
+    display:'Cactus Virus X',
+    cause:'A viral disease caused by Cactus virus X (CVX), transmitted through infected cutting tools, sap-to-sap contact, and infected planting material. Cannot be chemically treated — prevention and removal are the only strategies.',
+    organic:'1. Remove and immediately destroy all infected plants.\n2. Sterilise all cutting tools with 70% alcohol or 10% bleach between each cut.\n3. Source only certified virus-free planting stock from reliable nurseries.\n4. Quarantine all new plants for 2–4 weeks before introducing them to the farm.',
+    chemical:'1. No chemical treatment exists for viral plant infections.\n2. Control sap-sucking insect vectors using Imidacloprid (0.05%).\n3. Apply Thiamethoxam (0.02%) as an alternative vector control.\n4. Focus on prevention through tool disinfection and certified planting stock.'
+});
+reg(['Healthy Stem','HealthyStem','healthystem','healthy'],{
+    display:'Healthy Stem ✅',
+    cause:'No disease detected! The plant appears to be in excellent health with no visible signs of infection, fungal growth, bacterial lesions, or viral symptoms. Continue your current care routine.',
+    organic:'1. Maintain regular preventive neem oil sprays (5 ml/litre) once every 2–3 weeks.\n2. Keep proper drainage around the base — avoid waterlogging.\n3. Apply compost or organic matter monthly to boost soil health.\n4. Prune regularly to improve airflow and reduce ambient humidity.',
+    chemical:'1. No treatment is currently required — the plant is healthy.\n2. As a preventive measure, a light copper-based fungicide spray once a month during the rainy season is recommended.\n3. Avoid over-applying chemicals on healthy plants.'
+});
+reg(['Brown Spot','BrownSpot','brownspot','brown_spot'],{
+    display:'Brown Spot',
+    cause:'Caused by the fungus Botryosphaeria dothidea or Alternaria species. Triggered by high humidity, poor drainage, and waterlogged soil. Appears as round brown spots with yellow halos that gradually enlarge.',
+    organic:'1. Spray neem oil solution (10 ml per litre of water) every 7 days.\n2. Improve soil drainage immediately — waterlogging is the primary trigger.\n3. Remove and destroy all infected leaves and stems from the field.\n4. Apply compost to boost soil microbial activity.',
+    chemical:'1. Apply Iprodione (0.2%) or Carbendazim (0.1%) fungicide every 10 days.\n2. Remove and burn heavily infected parts before applying treatment.\n3. Switch to Azoxystrobin (0.1%) if no improvement after 3 spray cycles.\n4. Do not spray in direct sunlight or immediately before rainfall.'
+});
+reg(['Soft Rot','SoftRot','softrot','soft_rot'],{
+    display:'Soft Rot',
+    cause:'Caused by the bacterium Pectobacterium carotovorum or the fungus Pythium species. Spreads rapidly in waterlogged conditions and through fresh wounds on the plant.',
+    organic:'1. Reduce irrigation immediately and allow soil to dry out partially.\n2. Apply Trichoderma harzianum bio-fungicide as a soil drench.\n3. Remove all rotten tissue and dust wound surfaces with wood ash or turmeric.\n4. Avoid creating new wounds during weeding or cultivation.',
+    chemical:'1. Apply Copper hydroxide (0.3%) bactericide/fungicide to all affected areas.\n2. For severe infections, drench soil with Metalaxyl (0.2%).\n3. Ensure excellent drainage after treatment.\n4. Repeat every 7 days until no new lesions appear.'
+});
+reg(['Black Spot','BlackSpot','blackspot','black_spot'],{
+    display:'Black Spot',
+    cause:'Caused by the fungus Pseudocercospora species or Alternaria alternata. Promoted by warm temperatures and high relative humidity.',
+    organic:'1. Spray diluted apple cider vinegar (1:10) or baking soda (1 tsp/litre) weekly.\n2. Apply neem oil (10 ml/litre) every 2 weeks as a preventive treatment.\n3. Prune heavily to achieve good air circulation.\n4. Remove and destroy all infected material promptly.',
+    chemical:'1. Use Tebuconazole (0.1%) or Propiconazole (0.1%) every 14 days.\n2. Mancozeb (0.25%) is a cost-effective alternative.\n3. Ensure complete surface coverage including undersides.\n4. Alternate systemic and contact fungicides each cycle.'
+});
+reg(['Gray Blight','GrayBlight','grayblight','gray_blight','Grey Blight','GreyBlight','greyblight'],{
+    display:'Gray Blight',
+    cause:'Caused by the fungus Pestalotiopsis species. Common in poorly ventilated farms with persistently high humidity.',
+    organic:'1. Prune all affected parts immediately and increase air circulation.\n2. Apply Bordeaux mixture (copper sulfate + lime, 1:1:100) every 10–14 days.\n3. Switch to drip irrigation — avoid all overhead wetting.\n4. Apply Bacillus subtilis-based bio-fungicide as preventive treatment.',
+    chemical:'1. Apply Chlorothalonil (0.2%) every 10 days during humid periods.\n2. Use Mancozeb + Metalaxyl combination for faster control.\n3. Alternate contact and systemic fungicides to prevent resistance.\n4. Spray in early morning, never before rain.'
+});
+
+/* ── STATE ── */
+let currentResult=null, currentImageSrc=null, currentModel=null;
+function normalize(r){ return (r||'').toLowerCase().replace(/[\s_-]+/g,''); }
+function lookupDisease(r){ return DB[normalize(r)]||null; }
+
+/* ── SUBMIT ── */
+function submitForm(modelType){
+    const fileInput=document.getElementById(modelType+'File');
+    if(!fileInput.files[0]){ alert('Please choose an image first.'); return; }
+
+    const btn=document.getElementById(modelType+'Btn');
+    btn.disabled=true;
+    btn.textContent='Analyzing...';
+
+    currentModel=modelType==='stem'?'🌿 Stem Model':'🍂 Spot Model';
+    const localSrc=URL.createObjectURL(fileInput.files[0]);
+    currentImageSrc=localSrc;
+
+    const overlay=document.getElementById('resultOverlay');
+    overlay.classList.add('active');
+    document.getElementById('overlayImg').src=localSrc;
+    document.getElementById('overlayBadge').textContent='🔍 Analyzing...';
+    document.getElementById('overlayBadge').className='result-badge';
+    document.getElementById('overlayLoading').style.display='flex';
+    document.getElementById('overlaySummary').style.display='none';
+    document.getElementById('overlayActions').style.display='none';
+
+    const fd=new FormData();
+    fd.append('image',fileInput.files[0]);
+    fd.append('model',modelType);
+
+    fetch('/',{method:'POST',body:fd,headers:{Accept:'application/json'}})
+        .then(r=>{
+            const ct=r.headers.get('content-type')||'';
+            if(!ct.includes('application/json')){
+                return r.text().then(html=>{
+                    const match=html.match(/Detected Disease[\s\S]*?<[^>]+badge[^>]*>([\s\S]*?)<\/div>/i)
+                                ||html.match(/class="badge[^"]*"[^>]*>([\s\S]*?)<\/div>/i);
+                    const rawResult=match ? match[1].replace(/<[^>]+>/g,'').trim() : 'Unknown';
+                    return {result: rawResult, image: null, _fromHTML: true};
+                });
+            }
+            return r.json();
+        })
+        .then(data=>{
+            btn.disabled=false;
+            btn.textContent='Predict Disease';
+
+            const raw=data.result||'Unknown';
+            const info=lookupDisease(raw);
+            currentResult=raw;
+
+            if(data.image && !data._fromHTML){
+                currentImageSrc='/static/uploads/'+data.image;
+                document.getElementById('overlayImg').src=currentImageSrc;
+            }
+
+            document.getElementById('overlayLoading').style.display='none';
+            const badge=document.getElementById('overlayBadge');
+            badge.textContent=info?info.display:raw;
+            if(normalize(raw)==='healthystem'||normalize(raw)==='healthy') badge.classList.add('healthy');
+
+            if(info){
+                document.getElementById('summaryText').textContent=info.cause.split('.')[0]+'.';
+                document.getElementById('overlaySummary').style.display='block';
+            }
+            document.getElementById('overlayActions').style.display='block';
+        })
+        .catch(err=>{
+            btn.disabled=false;
+            btn.textContent='Predict Disease';
+            console.error('Prediction error:',err);
+            document.getElementById('overlayLoading').style.display='none';
+            document.getElementById('overlayBadge').textContent='⚠️ Error — please retry';
+            document.getElementById('overlayBadge').className='result-badge';
+            document.getElementById('overlayActions').style.display='block';
+        });
+}
+
+/* ── DETAIL PAGE ── */
+function openDetailPage(){
+    const info=lookupDisease(currentResult);
+    if(!info){ alert('No disease details found.'); return; }
+
+    document.getElementById('detailImg').src=currentImageSrc;
+    document.getElementById('detailBadge').textContent=info.display;
+    document.getElementById('detailBadge').className='result-badge'+(normalize(currentResult)==='healthystem'||normalize(currentResult)==='healthy'?' healthy':'');
+    document.getElementById('detailModelUsed').textContent=currentModel;
+    document.getElementById('detailCause').innerHTML=formatSteps(info.cause);
+    document.getElementById('detailOrganic').innerHTML=formatSteps(info.organic);
+    document.getElementById('detailChemical').innerHTML=formatSteps(info.chemical);
+
+    document.getElementById('resultOverlay').classList.remove('active');
+    const d=document.getElementById('detailOverlay');
+    d.classList.add('active');
+    d.scrollTop=0;
+}
+
+function formatSteps(text){
+    return text.split('\n').filter(l=>l.trim()).map((line,i)=>{
+        const body=line.replace(/^\d+\.\s*/,'');
+        return `<div class="step-row"><span class="step-num">${i+1}</span><span>${body}</span></div>`;
+    }).join('');
+}
+
+function closeOverlay(){
+    document.getElementById('resultOverlay').classList.remove('active');
+}
+function closeDetail(){
+    document.getElementById('detailOverlay').classList.remove('active');
+    document.getElementById('resultOverlay').classList.add('active');
+}
+
+document.getElementById('resultOverlay').addEventListener('click',function(e){
+    if(e.target===this) closeOverlay();
+});
+document.getElementById('detailOverlay').addEventListener('click',function(e){
+    if(e.target===this) closeDetail();
+});
+</script>
+</body>
+</html>
